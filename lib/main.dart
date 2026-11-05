@@ -3,21 +3,27 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp());
 
-// Modelo para las películas
+// Modelo avanzado para las películas con póster, año, puntuación y sinopsis
 class Movie {
   final int id;
   final String title;
   final String genre;
   final int duration;
+  final int year;
+  final double rating;
   final String synopsis;
+  final String posterUrl;
   bool isWatched;
 
   Movie({
     required this.id,
     required this.title,
-    this.genre = 'Pendiente',
+    this.genre = 'Cine',
     this.duration = 120,
-    this.synopsis = 'Añadida a tu lista personal.',
+    this.year = 2023,
+    this.rating = 7.5,
+    this.synopsis = 'Una gran experiencia cinematográfica para disfrutar esta noche.',
+    this.posterUrl = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600&auto=format&fit=crop',
     this.isWatched = false,
   });
 }
@@ -54,12 +60,72 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Lista vacía para que cada usuario meta sus propias películas
-  final List<Movie> _movies = [];
+  // Lista con algunas películas de ejemplo que ya traen póster e info detallada
+  final List<Movie> _movies = [
+    Movie(
+      id: 1,
+      title: 'Cars',
+      genre: 'Animación / Aventura',
+      duration: 117,
+      year: 2006,
+      rating: 7.1,
+      synopsis: 'El aspirante a campeón de carreras Rayo McQueen parece que está a punto de conseguir el éxito, la fama y todo lo que había soñado, hasta que por error toma un desvío inesperado en la polvorienta y solitaria Ruta 66.',
+      posterUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop',
+    ),
+    Movie(
+      id: 2,
+      title: 'Interstellar',
+      genre: 'Sci-Fi / Aventura',
+      duration: 169,
+      year: 2014,
+      rating: 8.7,
+      synopsis: 'Un grupo de astronautas viaja a través de un agujero de gusano en busca de un nuevo hogar para la humanidad cuando la Tierra se vuelve inhabitable.',
+      posterUrl: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=600&auto=format&fit=crop',
+    ),
+    Movie(
+      id: 3,
+      title: 'Buscando a Nemo',
+      genre: 'Animación / Familiar',
+      duration: 100,
+      year: 2003,
+      rating: 8.2,
+      synopsis: 'Un pez payaso sobreprotector se embarca en un viaje épico a través del océano para rescatar a su hijo capturado por un dentista.',
+      posterUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=600&auto=format&fit=crop',
+    ),
+    Movie(
+      id: 4,
+      title: 'Scream',
+      genre: 'Terror / Misterio',
+      duration: 111,
+      year: 1996,
+      rating: 7.4,
+      synopsis: 'Un misterioso asesino enmascarado acecha a los estudiantes de secundaria en un pequeño pueblo, desatando una ola de terror.',
+      posterUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop',
+    ),
+    Movie(
+      id: 5,
+      title: 'Piratas del Caribe',
+      genre: 'Aventura / Acción',
+      duration: 143,
+      year: 2011,
+      rating: 6.6,
+      synopsis: 'El intrépido capitán Jack Sparrow se embarca en una nueva y peligrosa búsqueda de la legendaria Fuente de la Juventud.',
+      posterUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop',
+    ),
+    Movie(
+      id: 6,
+      title: 'El Señor de los Anillos',
+      genre: 'Fantasía / Épica',
+      duration: 201,
+      year: 2003,
+      rating: 9.0,
+      synopsis: 'Las fuerzas de Sauron asedian Minas Tirith. El ejército de Rohan acude en su ayuda mientras Frodo y Sam se acercan al Monte del Destino.',
+      posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600&auto=format&fit=crop',
+    ),
+  ];
 
   final TextEditingController _singleMovieController = TextEditingController();
 
-  // Función para hacer el ROLL 6
   void _roll6() {
     if (_movies.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Diálogo para añadir una película suelta
   void _showAddMovieModal() {
     showDialog(
       context: context,
@@ -130,7 +195,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Diálogo para importar desde el Bloc de Notas
   void _showImportModal() {
     final TextEditingController importController = TextEditingController();
     showDialog(
@@ -190,7 +254,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Abrir la pantalla de la colección completa de películas
   void _openCollectionScreen() {
     Navigator.push(
       context,
@@ -224,7 +287,6 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: Center(
-              // Botón de contador interactivo para abrir la lista de películas
               child: InkWell(
                 onTap: _openCollectionScreen,
                 borderRadius: BorderRadius.circular(20),
@@ -269,7 +331,6 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text("Tira los dados para obtener 6 opciones instantáneas.", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey)),
             const SizedBox(height: 36),
 
-            // Botón ROLL 6
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -293,12 +354,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Spacer(),
 
-            // Zona inferior interactiva
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Column(
                 children: [
-                  // Buscador interactivo
                   GestureDetector(
                     onTap: () {
                       if (_movies.isEmpty) {
@@ -323,8 +382,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Importar Bloc de Notas
                   GestureDetector(
                     onTap: _showImportModal,
                     child: Container(
@@ -342,8 +399,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Añadir peli suelta + Botón +
                   Row(
                     children: [
                       Expanded(
@@ -383,7 +438,251 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Pantalla para ver y gestionar la Colección Completa de Películas
+// Pantalla de Resultados del Sorteo con Grid de 2 columnas estilo póster grande
+class RollResultsScreen extends StatelessWidget {
+  final List<Movie> selectedMovies;
+  const RollResultsScreen({super.key, required this.selectedMovies});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("YOUR 6 PICKS", style: TextStyle(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+      ),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // 2 columnas como en la referencia
+          childAspectRatio: 0.62, // proporción alargada tipo póster
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: selectedMovies.length,
+        itemBuilder: (context, index) {
+          final movie = selectedMovies[index];
+          String formattedId = movie.id.toString().padLeft(3, '0');
+
+          return GestureDetector(
+            onTap: () {
+              // Muestra el modal detallado al pulsar la tarjeta
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: const Color(0xFF1A1A1A),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) => MovieDetailModal(movie: movie),
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Póster de la película
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: Image.network(
+                        movie.posterUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey[850],
+                          child: const Icon(Icons.movie, color: Colors.white54, size: 40),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Número de identificación en la parte inferior de la tarjeta
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      "#$formattedId",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFD4AF37),
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Modal Detallado de la Película (Estilo exacto de tu captura)
+class MovieDetailModal extends StatelessWidget {
+  final Movie movie;
+  const MovieDetailModal({super.key, required this.movie});
+
+  @override
+  Widget build(BuildContext context) {
+    String formattedId = movie.id.toString().padLeft(3, '0');
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Cabecera con miniatura y datos principales
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    movie.posterUrl,
+                    width: 100,
+                    height: 140,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 100,
+                      height: 140,
+                      color: Colors.grey[850],
+                      child: const Icon(Icons.movie, color: Colors.white54),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        movie.title,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "#$formattedId • ${movie.genre}",
+                        style: const TextStyle(fontSize: 13, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 12),
+                      // Fila de Año y Puntuación
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              children: [
+                                const Text("📅", style: TextStyle(fontSize: 12)),
+                                const SizedBox(width: 4),
+                                Text("${movie.year}", style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              children: [
+                                const Text("⭐", style: TextStyle(fontSize: 12)),
+                                const SizedBox(width: 4),
+                                Text("${movie.rating}/10", style: const TextStyle(fontSize: 12, color: Colors.amber)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "Sinopsis",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFD4AF37),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              movie.synopsis,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Botón de Marcar como Vista (Elegir esta)
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  Navigator.pop(context); // Cierra modal
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: const Color(0xFF1A1A1A),
+                      title: const Text('🍿 TONIGHT\'S MOVIE', style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+                      content: Text('¡Tonight, we\'re watching "${movie.title}"!', style: const TextStyle(color: Colors.white, fontSize: 16)),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context); // Cierra alert
+                            Navigator.pop(context); // Vuelve a home desde resultados
+                          },
+                          child: const Text('¡A verla!', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.check_circle_outline, size: 20),
+                label: const Text(
+                  "Marcar como Vista (Elegir esta)",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Pantalla para ver y gestionar la Colección
 class MyCollectionScreen extends StatefulWidget {
   final List<Movie> movies;
   final Function(Movie) onDelete;
@@ -456,146 +755,6 @@ class _MyCollectionScreenState extends State<MyCollectionScreen> {
   }
 }
 
-// Pantalla de Resultados del Sorteo (Muestra las 6 películas)
-class RollResultsScreen extends StatelessWidget {
-  final List<Movie> selectedMovies;
-  const RollResultsScreen({super.key, required this.selectedMovies});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("YOUR 6 PICKS", style: TextStyle(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: selectedMovies.length,
-        itemBuilder: (context, index) {
-          final movie = selectedMovies[index];
-          String formattedId = movie.id.toString().padLeft(3, '0');
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white12),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  "#$formattedId",
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFFD4AF37)),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Text(
-                    movie.title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailsScreen(movie: movie),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// Pantalla de Detalles de la película elegida
-class DetailsScreen extends StatelessWidget {
-  final Movie movie;
-  const DetailsScreen({super.key, required this.movie});
-
-  @override
-  Widget build(BuildContext context) {
-    String formattedId = movie.id.toString().padLeft(3, '0');
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("DETALLES #$formattedId"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              movie.title,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "${movie.genre}  |  ${movie.duration} min",
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Sinopsis",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              movie.synopsis,
-              style: const TextStyle(fontSize: 15, color: Colors.white70, height: 1.5),
-            ),
-            const Spacer(),
-
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD4AF37),
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                ),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: const Color(0xFF1A1A1A),
-                      title: const Text('🍿 TONIGHT\'S MOVIE', style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
-                      content: Text('¡Tonight, we\'re watching "${movie.title}"!', style: const TextStyle(color: Colors.white, fontSize: 16)),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                          },
-                          child: const Text('¡A verla!', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                child: const Text(
-                  "ELEGIR ESTA",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // Buscador rápido
 class MovieSearchDelegate extends SearchDelegate {
   final List<Movie> movies;
@@ -639,7 +798,15 @@ class MovieSearchDelegate extends SearchDelegate {
           subtitle: Text(movie.genre, style: const TextStyle(color: Colors.grey)),
           onTap: () {
             close(context, null);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsScreen(movie: movie)));
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: const Color(0xFF1A1A1A),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              builder: (context) => MovieDetailModal(movie: movie),
+            );
           },
         );
       },
