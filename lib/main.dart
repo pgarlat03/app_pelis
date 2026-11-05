@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(const MyApp());
 
@@ -30,6 +31,32 @@ class Movie {
     this.posterUrl = '',
     this.isWatched = false,
   });
+
+  // Convertir película a JSON para guardarla
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'genre': genre,
+        'duration': duration,
+        'year': year,
+        'rating': rating,
+        'synopsis': synopsis,
+        'posterUrl': posterUrl,
+        'isWatched': isWatched,
+      };
+
+  // Crear película desde JSON guardado
+  factory Movie.fromJson(Map<String, dynamic> json) => Movie(
+        id: json['id'],
+        title: json['title'],
+        genre: json['genre'] ?? 'Cine',
+        duration: json['duration'] ?? 120,
+        year: json['year'] ?? 2024,
+        rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+        synopsis: json['synopsis'] ?? 'Sinopsis no disponible.',
+        posterUrl: json['posterUrl'] ?? '',
+        isWatched: json['isWatched'] ?? false,
+      );
 }
 
 class TmdbService {
@@ -114,15 +141,45 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Movie> _movies = [];
+  List<Movie> _movies = [];
   bool _isLoading = false;
 
   final TextEditingController _singleMovieController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMovies(); // Cargar películas guardadas al abrir la app
+  }
+
+  // Cargar películas desde SharedPreferences
+  Future<void> _loadMovies() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? moviesString = prefs.getString('saved_movies');
+    if (moviesString != null) {
+      try {
+        final List decodedList = json.decode(moviesString);
+        setState(() {
+          _movies = decodedList.map((item) => Movie.fromJson(item)).toList();
+        });
+      } catch (e) {
+        debugPrint('Error cargando películas: $e');
+      }
+    }
+  }
+
+  // Guardar películas en SharedPreferences
+  Future<void> _saveMovies() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encodedList = json.encode(_movies.map((m) => m.toJson()).toList());
+    await prefs.setString('saved_movies', encodedList);
+  }
 
   void _deleteMovie(Movie movie) {
     setState(() {
       _movies.removeWhere((m) => m.id == movie.id);
     });
+    _saveMovies(); // Guardar cambios tras eliminar
   }
 
   void _roll6() {
@@ -180,6 +237,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       _isLoading = false;
     });
+
+    _saveMovies(); // Guardar cambios tras añadir
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('¡Película procesada con éxito! 🍿')),
@@ -294,6 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
 
                   setState(() => _isLoading = false);
+                  _saveMovies(); // Guardar tras la importación masiva
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -951,13 +1011,9 @@ class MovieDetailModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () {
-                  // 1. Elimina la película de la lista principal
                   onSelectAsWatched(movie);
-
-                  // 2. Cierra el modal emergente
                   Navigator.pop(context);
 
-                  // 3. Muestra diálogo de confirmación y vuelve a inicio
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -973,8 +1029,8 @@ class MovieDetailModal extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Cierra alerta
-                            Navigator.pop(context); // Vuelve a Home
+                            Navigator.pop(context);
+                            Navigator.pop(context);
                           },
                           child: const Text('¡A verla!',
                               style: TextStyle(color: Colors.white)),
