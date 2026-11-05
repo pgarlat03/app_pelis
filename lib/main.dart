@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp());
 
-// Modelo simple para las películas
+// Modelo para las películas
 class Movie {
   final int id;
   final String title;
@@ -15,9 +15,9 @@ class Movie {
   Movie({
     required this.id,
     required this.title,
-    required this.genre,
-    required this.duration,
-    required this.synopsis,
+    this.genre = 'Pendiente',
+    this.duration = 120,
+    this.synopsis = 'Añadida a tu lista personal.',
     this.isWatched = false,
   });
 }
@@ -46,7 +46,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Pantalla Principal Interactiva
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -55,16 +54,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Lista inicial de ejemplo (tu colección)
-  final List<Movie> _movies = [
-    Movie(id: 1, title: 'Interstellar', genre: 'Sci-Fi', duration: 169, synopsis: 'Un grupo de astronautas viaja a través de un agujero de gusano en busca de un nuevo hogar para la humanidad.'),
-    Movie(id: 2, title: 'The Prestige', genre: 'Drama / Misterio', duration: 130, synopsis: 'Dos magos rivales compiten en el Londres victoriano para crear la ilusión definitiva.'),
-    Movie(id: 3, title: 'Arrival', genre: 'Sci-Fi', duration: 116, synopsis: 'Una lingüista intenta comunicarse con unos alienígenas cuya nave ha aterrizado en la Tierra.'),
-    Movie(id: 4, title: 'Prisoners', genre: 'Thriller', duration: 153, synopsis: 'Un padre desesperado toma la justicia por su mano cuando su hija y su amiga desaparecen.'),
-    Movie(id: 5, title: 'Shutter Island', genre: 'Misterio', duration: 138, synopsis: 'Dos detectives investigan la desaparición de una asesina en un hospital psiquiátrico insular.'),
-    Movie(id: 6, title: 'Inception', genre: 'Acción / Sci-Fi', duration: 148, synopsis: 'Un ladrón que roba secretos a través de los sueños recibe una misión imposible: la incepción.'),
-    Movie(id: 7, title: 'Whiplash', genre: 'Drama', duration: 106, synopsis: 'Un joven baterista presiona sus límites bajo la tutela de un profesor implacable.'),
-  ];
+  // Lista vacía para que cada usuario meta sus propias películas
+  final List<Movie> _movies = [];
 
   final TextEditingController _singleMovieController = TextEditingController();
 
@@ -72,16 +63,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void _roll6() {
     if (_movies.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Necesitas al menos 6 películas en tu lista para hacer Roll 6.')),
+        SnackBar(
+          content: Text('Necesitas al menos 6 películas en tu lista. Tienes ${_movies.length}.'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
       return;
     }
 
-    // Copiamos la lista y la barajamos al azar
     List<Movie> shuffled = List.from(_movies)..shuffle(Random());
     List<Movie> selected6 = shuffled.take(6).toList();
 
-    // Navegamos a la pantalla de resultados pasando las 6 elegidas
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -121,15 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     _movies.add(Movie(
                       id: newId,
                       title: _singleMovieController.text.trim(),
-                      genre: 'General',
-                      duration: 120,
-                      synopsis: 'Película añadida manualmente a la colección.',
                     ));
                   });
                   _singleMovieController.clear();
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('¡Película añadida con éxito! 🍿')),
+                    const SnackBar(content: Text('¡Película añadida a tu colección! 🍿')),
                   );
                 }
               },
@@ -154,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.maxFinite,
             child: TextField(
               controller: importController,
-              maxLines: 6,
+              maxLines: 8,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
                 hintText: 'Pega aquí tus películas (una por línea)...',
@@ -173,23 +162,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 String text = importController.text.trim();
                 if (text.isNotEmpty) {
                   List<String> lines = text.split('\n');
+                  int addedCount = 0;
                   setState(() {
                     for (var line in lines) {
-                      if (line.trim().isNotEmpty) {
+                      String cleanLine = line.trim();
+                      if (cleanLine.isNotEmpty) {
                         int newId = _movies.isEmpty ? 1 : _movies.last.id + 1;
                         _movies.add(Movie(
                           id: newId,
-                          title: line.trim(),
-                          genre: 'General',
-                          duration: 120,
-                          synopsis: 'Importada desde bloc de notas.',
+                          title: cleanLine,
                         ));
+                        addedCount++;
                       }
                     }
                   });
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('¡Importadas ${lines.length} películas con éxito! 🚀')),
+                    SnackBar(content: Text('¡Importadas $addedCount películas a tu lista! 🚀')),
                   );
                 }
               },
@@ -198,6 +187,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
       },
+    );
+  }
+
+  // Abrir la pantalla de la colección completa de películas
+  void _openCollectionScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MyCollectionScreen(
+          movies: _movies,
+          onDelete: (movie) {
+            setState(() {
+              _movies.remove(movie);
+            });
+          },
+        ),
+      ),
     );
   }
 
@@ -218,15 +224,23 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: surfaceDark, borderRadius: BorderRadius.circular(20)),
-                child: Row(
-                  children: [
-                    const Icon(Icons.movie_outlined, size: 14, color: Colors.grey),
-                    const SizedBox(width: 6),
-                    Text("$pendingCount pendientes", style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                  ],
+              // Botón de contador interactivo para abrir la lista de películas
+              child: InkWell(
+                onTap: _openCollectionScreen,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(color: surfaceDark, borderRadius: BorderRadius.circular(20)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.movie_outlined, size: 14, color: primaryGold),
+                      const SizedBox(width: 6),
+                      Text(
+                        "$pendingCount pendientes",
+                        style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -255,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text("Tira los dados para obtener 6 opciones instantáneas.", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey)),
             const SizedBox(height: 36),
 
-            // Botón ROLL 6 funcional
+            // Botón ROLL 6
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -287,6 +301,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Buscador interactivo
                   GestureDetector(
                     onTap: () {
+                      if (_movies.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Tu lista está vacía. ¡Añade algunas películas primero!')),
+                        );
+                        return;
+                      }
                       showSearch(context: context, delegate: MovieSearchDelegate(movies: _movies));
                     },
                     child: Container(
@@ -323,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Añadir peli suelta + Botón de más
+                  // Añadir peli suelta + Botón +
                   Row(
                     children: [
                       Expanded(
@@ -363,6 +383,79 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+// Pantalla para ver y gestionar la Colección Completa de Películas
+class MyCollectionScreen extends StatefulWidget {
+  final List<Movie> movies;
+  final Function(Movie) onDelete;
+
+  const MyCollectionScreen({super.key, required this.movies, required this.onDelete});
+
+  @override
+  State<MyCollectionScreen> createState() => _MyCollectionScreenState();
+}
+
+class _MyCollectionScreenState extends State<MyCollectionScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("TU COLECCIÓN (${widget.movies.length})", style: const TextStyle(letterSpacing: 1.5, fontWeight: FontWeight.bold)),
+      ),
+      body: widget.movies.isEmpty
+          ? const Center(
+              child: Text(
+                "Aún no has añadido películas a tu lista. 🍿",
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: widget.movies.length,
+              itemBuilder: (context, index) {
+                final movie = widget.movies[index];
+                String formattedId = movie.id.toString().padLeft(3, '0');
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A1A),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "#$formattedId",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          movie.title,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            widget.onDelete(movie);
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('"${movie.title}" eliminada de la lista.')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+
 // Pantalla de Resultados del Sorteo (Muestra las 6 películas)
 class RollResultsScreen extends StatelessWidget {
   final List<Movie> selectedMovies;
@@ -391,24 +484,17 @@ class RollResultsScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Número fijo de la película
                 Text(
                   "#$formattedId",
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFFD4AF37)),
                 ),
                 const SizedBox(width: 20),
-                // Título y género
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(movie.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 4),
-                      Text("${movie.genre} • ${movie.duration} min", style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                    ],
+                  child: Text(
+                    movie.title,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
-                // Botón para ver detalles
                 IconButton(
                   icon: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                   onPressed: () {
@@ -468,7 +554,6 @@ class DetailsScreen extends StatelessWidget {
             ),
             const Spacer(),
 
-            // Botón definitivo: "Elegir esta"
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -488,9 +573,9 @@ class DetailsScreen extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Cierra popup
-                            Navigator.pop(context); // Vuelve a home
-                            Navigator.pop(context); // Vuelve a home desde resultados
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
                           },
                           child: const Text('¡A verla!', style: TextStyle(color: Colors.white)),
                         ),
@@ -511,7 +596,7 @@ class DetailsScreen extends StatelessWidget {
   }
 }
 
-// Buscador rápido integrado
+// Buscador rápido
 class MovieSearchDelegate extends SearchDelegate {
   final List<Movie> movies;
   MovieSearchDelegate({required this.movies});
